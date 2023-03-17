@@ -8,7 +8,6 @@ const registerUser = async (req, res) => {
     try {
         const { userEmail } = req.body
         const isEmailExist = await userSchema.findOne({ userEmail })
-        console.log(isEmailExist);
         if (isEmailExist) {
             res.status(409).json({
                 success: false,
@@ -17,8 +16,8 @@ const registerUser = async (req, res) => {
         } else {
             try {
                 const userData = new userSchema(req.body)
-                // const filepath = `/uploads/${req.file.filename}`
-                // userData.profilePic = filepath
+                const filepath = `/uploads/${req.file.filename}`
+                userData.profilePic = filepath
                 userData.password = await bcrypt.hash(req.body.password, salt);
                 await userData.save();
                 res.status(201).json({
@@ -43,7 +42,6 @@ const loginUser = async (req, res) => {
         if (findUser) {
             const isMatch = await bcrypt.compare(password, findUser.password);
             if (findUser.userEmail == userEmail && isMatch) {
-                console.log("thihd");
                 const token = jwt.sign({ userID: isMatch._id }, process.env.SECRETKEY, { expiresIn: "8d" });
                 res.status(200).json({
                     success: true,
@@ -53,13 +51,13 @@ const loginUser = async (req, res) => {
             } else {
                 res.status(400).json({
                     success: false,
-                    message: "error occured ",
+                    message: "Password does not Match",
                 })
             }
         } else {
             res.status(400).json({
                 success: false,
-                message: "Password does not Match",
+                message: "you are not a register user",
             })
         }
     }
